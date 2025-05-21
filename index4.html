@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DiceChess ランキング</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #fffde7, #f1f8e9);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #333;
+      margin-bottom: 1rem;
+    }
+
+    #ranking-list {
+      width: 90%;
+      max-width: 600px;
+      background-color: #ffffff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+    }
+
+    .player-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .player-row:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .player-name {
+      font-weight: bold;
+      color: #555;
+    }
+
+    .player-rate {
+      color: #00796B;
+    }
+
+    #back {
+      margin-top: 2rem;
+      font-size: 1rem;
+      color: #007BFF;
+      text-decoration: none;
+    }
+
+    #back:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎖️ プレイヤーランキング</h1>
+  <div id="ranking-list">読み込み中...</div>
+  <a id="back" href="./index3.html">← ログイン画面へ戻る</a>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAFQI1E8pspRrSHECSzh5mQxvIGG2oqyq8",
+      authDomain: "dicechess-f5f50.firebaseapp.com",
+      projectId: "dicechess-f5f50",
+      storageBucket: "dicechess-f5f50.appspot.com",
+      messagingSenderId: "612776353708",
+      appId: "1:612776353708:web:f285fa250fc6a61faae409",
+      measurementId: "G-5H17F0B5R0"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function loadRanking() {
+      const container = document.getElementById("ranking-list");
+      try {
+        const snapshot = await db.collection("users")
+          .orderBy("rate", "desc")
+          .limit(50)
+          .get();
+
+        if (snapshot.empty) {
+          container.innerHTML = "<p>ランキングデータがありません。</p>";
+          return;
+        }
+
+        container.innerHTML = "";
+        snapshot.forEach((doc, index) => {
+          const data = doc.data();
+          const row = document.createElement("div");
+          row.className = "player-row";
+          row.innerHTML = `
+            <div class="player-name">${index + 1}. ${data.name}</div>
+            <div class="player-rate">${data.rate} pt</div>
+          `;
+          container.appendChild(row);
+        });
+      } catch (e) {
+        console.error("ランキング取得失敗", e);
+        container.innerHTML = "<p>ランキングの取得に失敗しました。</p>";
+      }
+    }
+
+    loadRanking();
+  </script>
+
+</body>
+</html>
