@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DiceChess Login</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #ffffff);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      color: #333;
+      margin-bottom: 2rem;
+    }
+
+    #loginBtn {
+      background-color: #4285F4;
+      color: white;
+      font-size: 1.2rem;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+
+    #loginBtn:hover {
+      background-color: #357ae8;
+    }
+
+    #online {
+      display: inline-block;
+      margin-top: 1.5rem;
+      font-size: 1rem;
+      color: #007BFF;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    #online:hover {
+      text-decoration: underline;
+    }
+
+    #userName {
+      margin-top: 1rem;
+      font-size: 1rem;
+      color: #444;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+
+    .menu-toggle {
+      display: flex; /* ← PC でも常に表示 */
+      flex-direction: column;
+      cursor: pointer;
+      gap: 4px;
+    }
+
+
+    .menu-toggle div {
+      width: 25px;
+      height: 3px;
+      background-color: #fff;
+    }
+
+    nav {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background-color: #444;
+      color: #fff;
+      display: none;
+      flex-direction: column;
+      min-width: 150px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    nav a {
+      padding: 0.8rem 1rem;
+      text-decoration: none;
+      color: #fff;
+      border-bottom: 1px solid #555;
+    }
+
+    nav a:hover {
+      background-color: #555;
+    }
+
+    .show-menu nav {
+      display: flex;
+    }
+
+    @media (max-width: 768px) {
+      .menu-toggle {
+        display: flex;
+      }
+
+      nav {
+        right: 0;
+        top: 60px;
+      }
+    }
+
+    /* ヘッダー */
+header {
+  height: 60px;
+  background-color: #222;
+  color: white;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+}
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">🎲 DiceChess</div>
+    <div class="menu-toggle" onclick="document.body.classList.toggle('show-menu')">
+      <div></div><div></div><div></div>
+    </div>
+    <nav>
+      <a href="./tutorial.html">ルール</a>
+      <a href="./index3.html">オンライン対戦</a>
+      <a href="./index4.html">ランキング</a>
+    </nav>
+  </header>
+  <button id="loginBtn">Googleでログイン</button>
+  <a href="#" id="online">Play Online</a>
+  <div id="userName"></div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAFQI1E8pspRrSHECSzh5mQxvIGG2oqyq8",
+      authDomain: "dicechess-f5f50.firebaseapp.com",
+      projectId: "dicechess-f5f50",
+      storageBucket: "dicechess-f5f50.appspot.com",
+      messagingSenderId: "612776353708",
+      appId: "1:612776353708:web:f285fa250fc6a61faae409",
+      measurementId: "G-5H17F0B5R0"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      try {
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user;
+        document.getElementById("userName").textContent = `${user.displayName} としてログインしました`;
+
+        const userRef = db.collection("users").doc(user.uid);
+        const doc = await userRef.get();
+        if (!doc.exists) {
+          await userRef.set({ name: user.displayName, rate: 1500 });
+        }
+
+        document.getElementById('online').href = `./index2.html?myname=${encodeURIComponent(user.displayName)}`;
+      } catch (error) {
+        console.error("ログイン失敗", error);
+      }
+    });
+  </script>
+
+</body>
+</html>
